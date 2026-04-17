@@ -1,0 +1,20 @@
+title: Fraser Scott
+email: yonada@proton.me
+description: >-
+  A new blog.
+baseurl: ""
+url: "https://yonadaa.github.io"
+
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+minima:
+  skin: auto # supports light/dark mode
+  social_links:
+    - platform: github
+      user_url: https://github.com/yonadaa
+    - platform: x
+      user_url: https://x.com/_yonada

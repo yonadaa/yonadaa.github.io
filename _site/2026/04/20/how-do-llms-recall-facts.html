@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>How do LLMs recall currencies? | Fraser Scott</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="How do LLMs recall currencies?" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems." />
+<meta property="og:description" content="After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems." />
+<link rel="canonical" href="http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html" />
+<meta property="og:url" content="http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html" />
+<meta property="og:site_name" content="Fraser Scott" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-04-20T00:00:00+01:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="How do LLMs recall currencies?" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-04-20T00:00:00+01:00","datePublished":"2026-04-20T00:00:00+01:00","description":"After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems.","headline":"How do LLMs recall currencies?","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html"},"url":"http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Fraser Scott" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Fraser Scott</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How do LLMs recall currencies?</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2026-04-20T00:00:00+01:00" itemprop="datePublished">Apr 20, 2026
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>After spending the last year designing <a href="https://arxiv.org/abs/2603.24621">tasks that are hard for AI</a>, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems.</p>
+
+<p>To start to answer this question, I looked to the obvious place - <a href="https://en.wikipedia.org/wiki/Mechanistic_interpretability">Mechanistic Interpretability</a>. A key idea there is <a href="https://www.anthropic.com/research/tracing-thoughts-language-model">circuit tracing</a>, that models have “features” which are used in “circuits” to predict the output.</p>
+
+<p>As a first go, I investigated how a model answers a very much <em>not</em> novel prompt:</p>
+
+<blockquote>
+  <p>Fact: the currency ticker of the country containing Medellín is</p>
+</blockquote>
+
+<p>When Qwen3-4B completes this prompt, it correctly answers “COP”. But not only that - it has internal representations of currencies, countries, Colombia, The Americas, and more!</p>
+
+<p><img src="/assets/attribution-graph-overview.png" alt="Graph" /></p>
+
+<p>If you are curious about this graph, read on.</p>
+
+<ul id="markdown-toc">
+  <li><a href="#circuit-tracing" id="markdown-toc-circuit-tracing">Circuit tracing</a></li>
+  <li><a href="#choosing-the-prompt" id="markdown-toc-choosing-the-prompt">Choosing the prompt</a></li>
+  <li><a href="#features" id="markdown-toc-features">Features</a>    <ul>
+      <li><a href="#input-features" id="markdown-toc-input-features">Input features</a>        <ul>
+          <li><a href="#the-colombia-feature" id="markdown-toc-the-colombia-feature">The “Colombia” feature</a></li>
+          <li><a href="#the-country-feature" id="markdown-toc-the-country-feature">The “country” feature</a></li>
+          <li><a href="#the-currency-ticker-feature" id="markdown-toc-the-currency-ticker-feature">The “currency ticker” feature</a></li>
+        </ul>
+      </li>
+      <li><a href="#output-features" id="markdown-toc-output-features">Output features</a>        <ul>
+          <li><a href="#the-say-uppercase-text-feature" id="markdown-toc-the-say-uppercase-text-feature">The “say uppercase text” feature</a></li>
+          <li><a href="#the-say-a-geographic-location-feature" id="markdown-toc-the-say-a-geographic-location-feature">The “say a geographic location” feature</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#the-attribution-graph" id="markdown-toc-the-attribution-graph">The attribution graph</a></li>
+  <li><a href="#conclusion" id="markdown-toc-conclusion">Conclusion</a></li>
+</ul>
+
+<h2 id="circuit-tracing">Circuit tracing</h2>
+
+<p>I followed the circuit tracing approach outlined by Anthropic <a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html">here</a>. In brief, they train a “replacement model” which approximates the output of an LLM, but with more interpretable components.</p>
+
+<p>The tool I used is the Neuronpedia <a href="https://www.neuronpedia.org/gemma-2-2b/graph">Circuit Tracer</a>. For the unfamiliar, <a href="https://www.youtube.com/watch?v=ruLcDtr_cGo">this tutorial</a> gives a good introduction to the application and circuits in general.</p>
+
+<p>The basic hypothesis of circuits is intuitive; models are probably learning various concepts and synthesising them in learned algorithms. If we can identify these features, we can see when they activate and what happens when they are ablated.</p>
+
+<h2 id="choosing-the-prompt">Choosing the prompt</h2>
+
+<p>I wanted a prompt that requires multi-step reasoning but has an unambiguous answer. I chose the following:</p>
+
+<blockquote>
+  <p>Fact: the currency ticker of the country containing Medellín is</p>
+</blockquote>
+
+<p>To complete this prompt, the model must recall a) which country Medellin is in, and b) its currency ticker. Hopefully, this reasoning chain is reflected as a circuit in the model. This <a href="https://transformer-circuits.pub/2025/attribution-graphs/biology.html#dives-tracing">format</a> is common in circuit tracing, so I was confident it would work.</p>
+
+<p>The model correctly predicts “COP” with 81% probability.</p>
+
+<p><img src="/assets/qwen-prompt-prediction.png" alt="Prompt" /></p>
+
+<p>I chose Qwen3-4B because it was the biggest model with steering (ie. ablating features).</p>
+
+<p>As for the formatting, the <em>“Fact:”</em> prefix just promotes a succinct response from the model. Also, Qwen3-4B is instruction-tuned, so the full prompt follows a user/assistant format. Conceptually the model is predicting the next token that a user would say.</p>
+
+<h2 id="features">Features</h2>
+
+<p>With the setup complete, Neuronpedia generates an attribution graph for the prompt.</p>
+
+<p><img src="/assets/initial-graph.png" alt="Initial graph" /></p>
+
+<p>That’s a lot! The input tokens run along the bottom, and the next token predictions are at the top right. The features take up the middle, separated by layer.</p>
+
+<p>A useful heuristic is to try identify two types of features:</p>
+
+<p><strong>Input features</strong> tend to appear in earlier layers and activate on particular input tokens. They are like the “source” of some information flowing through the network.</p>
+
+<p><strong>Output features</strong> tend to activate in later layers. They activate in response to input features and influence the <em>next</em> token that the model will predict. For this reason they are often denoted by “say X”.</p>
+
+<p>For example, take the prompt:</p>
+
+<blockquote>
+  <p>The national dish of Italy is</p>
+</blockquote>
+
+<p>Imagine that a “food” <em>input</em> feature activates on the token “dish”. If this is ablated, the model will kind of forget that the question is about food, and give another answer, like the national animal.</p>
+
+<p>Suppose also that there is a “say a food” <em>output</em> feature. If this is ablated, the model will not immediately say the answer, but give an indirect completion like <em>“…is called pizza”</em>. It does not forget the question (the “food” feature is still present), but it’s response is temporarily suppressed.</p>
+
+<p>In practice, each feature is an input and output to many others, but this heuristic gets us quite far.</p>
+
+<h3 id="input-features">Input features</h3>
+
+<p>We can find input features by inspecting the features activated by each token in the prompt. Handily, Neuronpedia provides automated labels for features based on their activations.</p>
+
+<p>Here are a few that I found.</p>
+
+<h4 id="the-colombia-feature">The “Colombia” feature</h4>
+
+<p>Starting with the “in” token (ie. Medellín), there a number of features activated at this position that reference Colombia.</p>
+
+<p>Interestingly, these features (in pink) appear in the middle layers of the network. Perhaps it takes a few layers for attention to mix the three tokens of “Med/ell/ín” into a single concept.</p>
+
+<p><img src="/assets/columbia-features-layers.png" alt="s" /></p>
+
+<p>Looking at their top activations, these features activate on places and concepts related to Colombia.</p>
+
+<p><img src="/assets/columbia-feature-activations.png" alt="act" /></p>
+
+<p>If all these features are ablated, the model outputs “MXN”!</p>
+
+<p><img src="/assets/ablation-columbia-mxn.png" alt="mxn" /></p>
+
+<p>There is clearly still Latin American influence in the answer. Well, if the “Americas” feature is also ablated, the model outputs “ZM” (Zambia)!</p>
+
+<p><img src="/assets/ablation-americas-zambia.png" alt="usd" /></p>
+
+<h4 id="the-country-feature">The “country” feature</h4>
+
+<p>Looking at the token “country”, there are a number of features labelled “country”, “nation”, etc.</p>
+
+<p>If these are ablated, the model answers “USD”. This intervention probably discourages the model from answering for a specific country, so it just outputs a generic currency.</p>
+
+<p><img src="/assets/ablation-country-usd.png" alt="country" /></p>
+
+<h4 id="the-currency-ticker-feature">The “currency ticker” feature</h4>
+
+<p>For the token “ticker”, there are various features labelled “currency”, “codes”, etc.</p>
+
+<p>As would be expected, these activate on financial terms and codes.</p>
+
+<p><img src="/assets/currency-ticker-features.png" alt="Currency" /></p>
+
+<p>If these features are ablated, the model gives a strange completion counting to 10. I’m not sure how to interpret this, but this feature is clearly important to the output.</p>
+
+<p><img src="/assets/ablation-ticker-numbers.png" alt="Numbers" /></p>
+
+<h3 id="output-features">Output features</h3>
+
+<p>To find output features, we can see which features influenced the model’s prediction.</p>
+
+<p>These are more difficult to interpret as there is no dedicated “say COL” feature. Also, a number of the activations for this prompt come from error nodes, which means there was a mismatch between the replacement model’s output and the underlying model; a feature cannot be attributed to the output.</p>
+
+<p><img src="/assets/error-nodes.png" alt="error" /></p>
+
+<h4 id="the-say-uppercase-text-feature">The “say uppercase text” feature</h4>
+
+<p>Looking at the “COP” prediction, one of the top inputs is an “uppercase text” feature which activates on capital letters.</p>
+
+<p><img src="/assets/uppercase-feature-activations.png" alt="yes" /></p>
+
+<p>In ablating this feature, the model gives a longer answer starting with “Colombian pesos”.</p>
+
+<p>This feature probably makes the model output a ticker specifically, instead of the full name of the currency. By intervening, we essentially force the model to reach the answer in an indirect way.</p>
+
+<p><img src="/assets/ablation-uppercase-indirect.png" alt="indirect" /></p>
+
+<h4 id="the-say-a-geographic-location-feature">The “say a geographic location” feature</h4>
+
+<p>Another top feature is labelled “geographic locations”. It activates mostly when completing Latin American place names.</p>
+
+<p><img src="/assets/locations.png" alt="locations" /></p>
+
+<p>If this is ablated, the completion is “USD”. It seems that this feature, perhaps working in concert with others, influences the model to answer about Colombia specifically.</p>
+
+<p><img src="/assets/truefalse.png" alt="truefalse" /></p>
+
+<h2 id="the-attribution-graph">The attribution graph</h2>
+
+<p>Now we have the important features, they can be visualised in a subgraph.</p>
+
+<p><img src="/assets/attribution-subgraph.png" alt="say" /></p>
+
+<p>So, how does this model complete this prompt?</p>
+
+<p>My interpretation is that the prompt activates features for specific countries (ie. Colombia), and the concepts of currency tickers and countries in general. These then activate output features which <em>separately</em> make the model say a) the currency of a specific country and b) to format it as a ticker.</p>
+
+<p>Of course, this is not a rigorous analysis. There are likely many more features that play a role, and it is unclear exactly how they interact.</p>
+
+<p>You can also try changing elements of the prompt. For example, in changing the city name to “Cartagena”, I found many of the same features were activated.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>This was a quick rundown of how I am doing circuit tracing just now. You can find the Neuronpedia graph for the prompt <a href="https://www.neuronpedia.org/qwen3-4b/graph?slug=factthecurrencyt-1776428893920&amp;pruningThreshold=0.8&amp;densityThreshold=0.99&amp;pinnedIds=0_14942_6%2C10_119235_7%2C9_56571_7%2C8_109333_7%2C8_10377_7%2C12_24041_14%2C11_59170_14%2C10_61562_14%2CE_24217_14%2CE_46987_7%2CE_3146_10%2C37_67572_15%2C0_89236_10%2C0_41226_10%2C0_152442_10%2C4_27893_10%2C7_119755_10%2C4_2106_10%2C4_111594_10%2C6_120290_10%2C3_95654_10%2C7_119375_10%2C8_106063_10%2C5_92573_10%2C2_14916_10%2C2_97829_10%2C5_17723_10%2C6_144334_10%2C3_87943_10%2C35_3761_15%2C31_72052_15%2CE_3264_12%2CE_613_13%2C34_60128_15&amp;supernodes=%5B%5B%22Colombia%22%2C%2212_24041_14%22%2C%2211_59170_14%22%2C%2210_61562_14%22%5D%2C%5B%22Currency+ticker%22%2C%220_14942_6%22%2C%228_109333_7%22%2C%2210_119235_7%22%2C%229_56571_7%22%2C%228_10377_7%22%5D%2C%5B%22Country%22%2C%227_119755_10%22%2C%224_111594_10%22%2C%224_2106_10%22%2C%223_87943_10%22%2C%220_152442_10%22%2C%226_120290_10%22%2C%226_144334_10%22%2C%228_106063_10%22%2C%223_95654_10%22%2C%222_97829_10%22%2C%220_41226_10%22%2C%220_89236_10%22%2C%222_14916_10%22%2C%225_17723_10%22%2C%224_27893_10%22%2C%225_92573_10%22%2C%227_119375_10%22%5D%5D">here</a>.</p>
+
+<p>Next up, I’ll analyse a more complex prompt much more rigorously.</p>
+
+<p>If you are curious about mechinterp, Anthropic’s <a href="https://transformer-circuits.pub/2023/monosemantic-features/index.html">Towards Monosemanticity</a>, <a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html">Scaling Monosemanticity</a>, and <a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html">Circuit Tracing</a> form a nice “trilogy” on this circuit tracing approach. Plus Neel Nanda’s <a href="https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher">How To Become A Mechanistic Interpretability Researcher</a> is a good starting place more broadly.</p>
+
+  </div><a class="u-url" href="/2026/04/20/how-do-llms-recall-facts.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Fraser Scott</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Fraser Scott</li><li><a class="u-email" href="mailto:yonada@proton.me">yonada@proton.me</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>A new blog.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
