@@ -111,7 +111,7 @@ As would be expected, these activate on financial terms and codes.
 
 ![Currency](/assets/currency-ticker-features.png)
 
-If these features are ablated, the model gives a strange completion counting to 10. I'm not sure how to interpret this, but this feature is clearly important to the output.
+If these features are ablated, the model gives a strange completion counting to 9. I'm not sure how to interpret this, but this feature is clearly important to the output.
 
 ![Numbers](/assets/ablation-ticker-numbers.png)
 
@@ -163,6 +163,6 @@ You can also try changing elements of the prompt. For example, in changing the c
 
 This was a quick rundown of how I am doing circuit tracing just now. You can find the Neuronpedia graph for the prompt [here](https://www.neuronpedia.org/qwen3-4b/graph?slug=factthecurrencyt-1776428893920&pruningThreshold=0.8&densityThreshold=0.99&pinnedIds=0_14942_6%2C10_119235_7%2C9_56571_7%2C8_109333_7%2C8_10377_7%2C12_24041_14%2C11_59170_14%2C10_61562_14%2CE_24217_14%2CE_46987_7%2CE_3146_10%2C37_67572_15%2C0_89236_10%2C0_41226_10%2C0_152442_10%2C4_27893_10%2C7_119755_10%2C4_2106_10%2C4_111594_10%2C6_120290_10%2C3_95654_10%2C7_119375_10%2C8_106063_10%2C5_92573_10%2C2_14916_10%2C2_97829_10%2C5_17723_10%2C6_144334_10%2C3_87943_10%2C35_3761_15%2C31_72052_15%2CE_3264_12%2CE_613_13%2C34_60128_15&supernodes=%5B%5B%22Colombia%22%2C%2212_24041_14%22%2C%2211_59170_14%22%2C%2210_61562_14%22%5D%2C%5B%22Currency+ticker%22%2C%220_14942_6%22%2C%228_109333_7%22%2C%2210_119235_7%22%2C%229_56571_7%22%2C%228_10377_7%22%5D%2C%5B%22Country%22%2C%227_119755_10%22%2C%224_111594_10%22%2C%224_2106_10%22%2C%223_87943_10%22%2C%220_152442_10%22%2C%226_120290_10%22%2C%226_144334_10%22%2C%228_106063_10%22%2C%223_95654_10%22%2C%222_97829_10%22%2C%220_41226_10%22%2C%220_89236_10%22%2C%222_14916_10%22%2C%225_17723_10%22%2C%224_27893_10%22%2C%225_92573_10%22%2C%227_119375_10%22%5D%5D). 
 
-Next up, I'll analyse a more complex prompt much more rigorously.
+Next, I'll analyse a more complex prompt much more rigorously.
 
 If you are curious about mechinterp, Anthropic's [Towards Monosemanticity](https://transformer-circuits.pub/2023/monosemantic-features/index.html), [Scaling Monosemanticity](https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html), and [Circuit Tracing](https://transformer-circuits.pub/2025/attribution-graphs/methods.html) form a nice "trilogy" on this circuit tracing approach. Plus Neel Nanda's [How To Become A Mechanistic Interpretability Researcher](https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher) is a good starting place more broadly.

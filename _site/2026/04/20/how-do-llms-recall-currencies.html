@@ -9,15 +9,15 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems." />
 <meta property="og:description" content="After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems." />
-<link rel="canonical" href="http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html" />
-<meta property="og:url" content="http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html" />
+<link rel="canonical" href="http://localhost:4000/2026/04/20/how-do-llms-recall-currencies.html" />
+<meta property="og:url" content="http://localhost:4000/2026/04/20/how-do-llms-recall-currencies.html" />
 <meta property="og:site_name" content="Fraser Scott" />
 <meta property="og:type" content="article" />
 <meta property="article:published_time" content="2026-04-20T00:00:00+01:00" />
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="How do LLMs recall currencies?" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-04-20T00:00:00+01:00","datePublished":"2026-04-20T00:00:00+01:00","description":"After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems.","headline":"How do LLMs recall currencies?","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html"},"url":"http://localhost:4000/2026/04/20/how-do-llms-recall-facts.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-04-20T00:00:00+01:00","datePublished":"2026-04-20T00:00:00+01:00","description":"After spending the last year designing tasks that are hard for AI, I have become interested in the question of how LLMs think, specifically how they are able to solve novel problems.","headline":"How do LLMs recall currencies?","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/2026/04/20/how-do-llms-recall-currencies.html"},"url":"http://localhost:4000/2026/04/20/how-do-llms-recall-currencies.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="Fraser Scott" /></head>
 <body><header class="site-header" role="banner">
@@ -178,7 +178,7 @@
 
 <p><img src="/assets/currency-ticker-features.png" alt="Currency" /></p>
 
-<p>If these features are ablated, the model gives a strange completion counting to 10. I’m not sure how to interpret this, but this feature is clearly important to the output.</p>
+<p>If these features are ablated, the model gives a strange completion counting to 9. I’m not sure how to interpret this, but this feature is clearly important to the output.</p>
 
 <p><img src="/assets/ablation-ticker-numbers.png" alt="Numbers" /></p>
 
@@ -230,11 +230,11 @@
 
 <p>This was a quick rundown of how I am doing circuit tracing just now. You can find the Neuronpedia graph for the prompt <a href="https://www.neuronpedia.org/qwen3-4b/graph?slug=factthecurrencyt-1776428893920&amp;pruningThreshold=0.8&amp;densityThreshold=0.99&amp;pinnedIds=0_14942_6%2C10_119235_7%2C9_56571_7%2C8_109333_7%2C8_10377_7%2C12_24041_14%2C11_59170_14%2C10_61562_14%2CE_24217_14%2CE_46987_7%2CE_3146_10%2C37_67572_15%2C0_89236_10%2C0_41226_10%2C0_152442_10%2C4_27893_10%2C7_119755_10%2C4_2106_10%2C4_111594_10%2C6_120290_10%2C3_95654_10%2C7_119375_10%2C8_106063_10%2C5_92573_10%2C2_14916_10%2C2_97829_10%2C5_17723_10%2C6_144334_10%2C3_87943_10%2C35_3761_15%2C31_72052_15%2CE_3264_12%2CE_613_13%2C34_60128_15&amp;supernodes=%5B%5B%22Colombia%22%2C%2212_24041_14%22%2C%2211_59170_14%22%2C%2210_61562_14%22%5D%2C%5B%22Currency+ticker%22%2C%220_14942_6%22%2C%228_109333_7%22%2C%2210_119235_7%22%2C%229_56571_7%22%2C%228_10377_7%22%5D%2C%5B%22Country%22%2C%227_119755_10%22%2C%224_111594_10%22%2C%224_2106_10%22%2C%223_87943_10%22%2C%220_152442_10%22%2C%226_120290_10%22%2C%226_144334_10%22%2C%228_106063_10%22%2C%223_95654_10%22%2C%222_97829_10%22%2C%220_41226_10%22%2C%220_89236_10%22%2C%222_14916_10%22%2C%225_17723_10%22%2C%224_27893_10%22%2C%225_92573_10%22%2C%227_119375_10%22%5D%5D">here</a>.</p>
 
-<p>Next up, I’ll analyse a more complex prompt much more rigorously.</p>
+<p>Next, I’ll analyse a more complex prompt much more rigorously.</p>
 
 <p>If you are curious about mechinterp, Anthropic’s <a href="https://transformer-circuits.pub/2023/monosemantic-features/index.html">Towards Monosemanticity</a>, <a href="https://transformer-circuits.pub/2024/scaling-monosemanticity/index.html">Scaling Monosemanticity</a>, and <a href="https://transformer-circuits.pub/2025/attribution-graphs/methods.html">Circuit Tracing</a> form a nice “trilogy” on this circuit tracing approach. Plus Neel Nanda’s <a href="https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher">How To Become A Mechanistic Interpretability Researcher</a> is a good starting place more broadly.</p>
 
-  </div><a class="u-url" href="/2026/04/20/how-do-llms-recall-facts.html" hidden></a>
+  </div><a class="u-url" href="/2026/04/20/how-do-llms-recall-currencies.html" hidden></a>
 </article>
 
       </div>
@@ -255,7 +255,7 @@
 </div>
 
       <div class="footer-col footer-col-3">
-        <p>A new blog.</p>
+        <p>A new blog</p>
       </div>
     </div>
 
