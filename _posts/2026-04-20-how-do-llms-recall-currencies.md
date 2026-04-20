@@ -41,7 +41,7 @@ The model correctly predicts "COP" with 81% probability.
 
 ![Prompt](/assets/qwen-prompt-prediction.png)
 
-I chose Qwen3-4B because it was the biggest model with steering (ie. ablating features).
+I chose Qwen3-4B because it was the biggest model with steering (i.e. ablating features).
 
 As for the formatting, the _"Fact:"_ prefix just promotes a succinct response from the model. Also, Qwen3-4B is instruction-tuned, so the full prompt follows a user/assistant format. Conceptually the model is predicting the next token that a user would say.
 
@@ -53,7 +53,7 @@ With the setup complete, Neuronpedia generates an attribution graph for the prom
 
 That's a lot! The input tokens run along the bottom, and the next token predictions are at the top right. The features take up the middle, separated by layer.
 
-A useful heuristic is to try identify two types of features:
+A useful heuristic is to try to identify two types of features:
 
 **Input features** tend to appear in earlier layers and activate on particular input tokens. They are like the "source" of some information flowing through the network.
 
@@ -65,7 +65,7 @@ For example, take the prompt:
 
 Imagine that a “food” _input_ feature activates on the token “dish”. If this is ablated, the model will kind of forget that the question is about food, and give another answer, like the national animal.
 
-Suppose also that there is a "say a food" _output_ feature. If this is ablated, the model will not immediately say the answer, but give an indirect completion like _"...is called pizza"_. It does not forget the question (the "food" feature is still present), but it's response is temporarily suppressed.
+Suppose also that there is a "say a food" _output_ feature. If this is ablated, the model will not immediately say the answer, but give an indirect completion like _"...is called pizza"_. It does not forget the question (the "food" feature is still present), but its response is temporarily suppressed.
 
 In practice, each feature is an input and output to many others, but this heuristic gets us quite far. 
 
@@ -77,23 +77,23 @@ Here are a few that I found.
 
 #### The "Colombia" feature
 
-Starting with the "in" token (ie. Medellín), there a number of features activated at this position that reference Colombia.
+Starting with the "in" token (i.e. Medellín), there are a number of features activated at this position that reference Colombia.
 
 Interestingly, these features (in pink) appear in the middle layers of the network. Perhaps it takes a few layers for attention to mix the three tokens of "Med/ell/ín" into a single concept.
 
-![s](/assets/columbia-features-layers.png)
+![s](/assets/colombia-features-layers.png)
 
 Looking at their top activations, these features activate on places and concepts related to Colombia.
 
-![act](/assets/columbia-feature-activations.png)
+![act](/assets/colombia-feature-activations.png)
 
 If all these features are ablated, the model outputs "MXN"! 
 
-![mxn](/assets/ablation-columbia-mxn.png)
+![mxn](/assets/ablation-colombia-mxn.png)
 
 There is clearly still Latin American influence in the answer. Well, if the "Americas" feature is also ablated, the model outputs "ZM" (Zambia)!
 
-![usd](/assets/ablation-americas-zambia.png)
+![zambia](/assets/ablation-americas-zambia.png)
 
 #### The "country" feature
 
@@ -153,7 +153,7 @@ Now we have the important features, they can be visualised in a subgraph.
 
 So, how does this model complete this prompt?
 
-My interpretation is that the prompt activates features for specific countries (ie. Colombia), and the concepts of currency tickers and countries in general. These then activate output features which _separately_ make the model say a) the currency of a specific country and b) to format it as a ticker.
+My interpretation is that the prompt activates features for specific countries (i.e. Colombia), and the concepts of currency tickers and countries in general. These then activate output features which _separately_ make the model say a) the currency of a specific country and b) to format it as a ticker.
 
 Of course, this is not a rigorous analysis. There are likely many more features that play a role, and it is unclear exactly how they interact. 
 

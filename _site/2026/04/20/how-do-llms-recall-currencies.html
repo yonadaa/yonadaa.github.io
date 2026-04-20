@@ -106,7 +106,7 @@
 
 <p><img src="/assets/qwen-prompt-prediction.png" alt="Prompt" /></p>
 
-<p>I chose Qwen3-4B because it was the biggest model with steering (ie. ablating features).</p>
+<p>I chose Qwen3-4B because it was the biggest model with steering (i.e. ablating features).</p>
 
 <p>As for the formatting, the <em>“Fact:”</em> prefix just promotes a succinct response from the model. Also, Qwen3-4B is instruction-tuned, so the full prompt follows a user/assistant format. Conceptually the model is predicting the next token that a user would say.</p>
 
@@ -118,7 +118,7 @@
 
 <p>That’s a lot! The input tokens run along the bottom, and the next token predictions are at the top right. The features take up the middle, separated by layer.</p>
 
-<p>A useful heuristic is to try identify two types of features:</p>
+<p>A useful heuristic is to try to identify two types of features:</p>
 
 <p><strong>Input features</strong> tend to appear in earlier layers and activate on particular input tokens. They are like the “source” of some information flowing through the network.</p>
 
@@ -132,7 +132,7 @@
 
 <p>Imagine that a “food” <em>input</em> feature activates on the token “dish”. If this is ablated, the model will kind of forget that the question is about food, and give another answer, like the national animal.</p>
 
-<p>Suppose also that there is a “say a food” <em>output</em> feature. If this is ablated, the model will not immediately say the answer, but give an indirect completion like <em>“…is called pizza”</em>. It does not forget the question (the “food” feature is still present), but it’s response is temporarily suppressed.</p>
+<p>Suppose also that there is a “say a food” <em>output</em> feature. If this is ablated, the model will not immediately say the answer, but give an indirect completion like <em>“…is called pizza”</em>. It does not forget the question (the “food” feature is still present), but its response is temporarily suppressed.</p>
 
 <p>In practice, each feature is an input and output to many others, but this heuristic gets us quite far.</p>
 
@@ -144,23 +144,23 @@
 
 <h4 id="the-colombia-feature">The “Colombia” feature</h4>
 
-<p>Starting with the “in” token (ie. Medellín), there a number of features activated at this position that reference Colombia.</p>
+<p>Starting with the “in” token (i.e. Medellín), there are a number of features activated at this position that reference Colombia.</p>
 
 <p>Interestingly, these features (in pink) appear in the middle layers of the network. Perhaps it takes a few layers for attention to mix the three tokens of “Med/ell/ín” into a single concept.</p>
 
-<p><img src="/assets/columbia-features-layers.png" alt="s" /></p>
+<p><img src="/assets/colombia-features-layers.png" alt="s" /></p>
 
 <p>Looking at their top activations, these features activate on places and concepts related to Colombia.</p>
 
-<p><img src="/assets/columbia-feature-activations.png" alt="act" /></p>
+<p><img src="/assets/colombia-feature-activations.png" alt="act" /></p>
 
 <p>If all these features are ablated, the model outputs “MXN”!</p>
 
-<p><img src="/assets/ablation-columbia-mxn.png" alt="mxn" /></p>
+<p><img src="/assets/ablation-colombia-mxn.png" alt="mxn" /></p>
 
 <p>There is clearly still Latin American influence in the answer. Well, if the “Americas” feature is also ablated, the model outputs “ZM” (Zambia)!</p>
 
-<p><img src="/assets/ablation-americas-zambia.png" alt="usd" /></p>
+<p><img src="/assets/ablation-americas-zambia.png" alt="zambia" /></p>
 
 <h4 id="the-country-feature">The “country” feature</h4>
 
@@ -220,7 +220,7 @@
 
 <p>So, how does this model complete this prompt?</p>
 
-<p>My interpretation is that the prompt activates features for specific countries (ie. Colombia), and the concepts of currency tickers and countries in general. These then activate output features which <em>separately</em> make the model say a) the currency of a specific country and b) to format it as a ticker.</p>
+<p>My interpretation is that the prompt activates features for specific countries (i.e. Colombia), and the concepts of currency tickers and countries in general. These then activate output features which <em>separately</em> make the model say a) the currency of a specific country and b) to format it as a ticker.</p>
 
 <p>Of course, this is not a rigorous analysis. There are likely many more features that play a role, and it is unclear exactly how they interact.</p>
 
@@ -255,7 +255,7 @@
 </div>
 
       <div class="footer-col footer-col-3">
-        <p>A new blog</p>
+        <p>A blog</p>
       </div>
     </div>
 
