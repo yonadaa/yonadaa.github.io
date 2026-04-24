@@ -2,10 +2,10 @@
 layout: post
 title: "Injecting country features in Gemma2-2b"
 date: 2026-04-24
+excerpt: "Circuit tracing lets us identify interpretable features in language models. But if we find a feature relating to some concept, does it activate on all prompts involving that concept? And do prompts involving different concepts use analogous features in the same role?"
 ---
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yonadaa/currency-circuit-tracing/blob/main/currency_circuit_tracing.ipynb)
-
 
 Circuit tracing lets us identify interpretable features in language models. But if we find a feature relating to some concept, does it activate on all prompts involving that concept? And do prompts involving different concepts use analogous features in the same role?
 
