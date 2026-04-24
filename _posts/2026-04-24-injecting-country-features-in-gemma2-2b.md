@@ -2,6 +2,7 @@
 layout: post
 title: "Injecting country features in Gemma2-2b"
 date: 2026-04-24
+description: "Circuit tracing lets us identify interpretable features in language models. In this post, I identify country-specific features and test whether they are interchangeable."
 excerpt: "Circuit tracing lets us identify interpretable features in language models. But if we find a feature relating to some concept, does it activate on all prompts involving that concept? And do prompts involving different concepts use analogous features in the same role?"
 ---
 
