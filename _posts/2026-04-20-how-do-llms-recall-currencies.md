@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "How do LLMs recall currencies?"
+title: "How does Qwen3-4B recall currencies?"
 date: 2026-04-20
 ---
 
