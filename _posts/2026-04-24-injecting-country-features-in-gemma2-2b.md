@@ -7,9 +7,9 @@ date: 2026-04-24
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yonadaa/currency-circuit-tracing/blob/main/currency_circuit_tracing.ipynb)
 
 
-Circuit tracing lets us identify interpretable features in language models. But how do we know that a given feature plays a consistent role across all prompts with the same answer? Furthermore, do prompts with different answers use analogous features in the same role?
+Circuit tracing lets us identify interpretable features in language models. But if we find a feature relating to some concept, does it activate on all prompts involving that concept? And do prompts involving different concepts use analogous features in the same role?
 
-In this post, I identify country-specific features that consistently activate when a model is prompted about cities in a given country. I then test whether these features are interchangeable by [injecting](https://transformer-circuits.pub/2025/attribution-graphs/biology.html#dives-tracing-swap) one country's features into a prompt about another.
+In this post, I identify country-specific features that consistently activate when a model is prompted about cities in a given country. I then test whether these features are interchangeable by [injecting](https://transformer-circuits.pub/2025/attribution-graphs/biology.html#dives-tracing-swap) the feature for one country into a prompt about another.
 
 If we ask Gemma2-2b to predict the currency of Manchester, but amplify the India feature while negating the UK feature, it answers Indian Rupee!
 
