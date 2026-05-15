@@ -1,4 +1,115 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-04-26T16:26:45+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Fraser Scott</title><subtitle>A blog</subtitle><entry><title type="html">Injecting country features in Gemma2-2b</title><link href="http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b.html" rel="alternate" type="text/html" title="Injecting country features in Gemma2-2b" /><published>2026-04-24T00:00:00+01:00</published><updated>2026-04-24T00:00:00+01:00</updated><id>http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b</id><content type="html" xml:base="http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b.html"><![CDATA[<p><a href="https://colab.research.google.com/github/yonadaa/currency-circuit-tracing/blob/main/currency_circuit_tracing.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" /></a></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2026-05-15T13:21:07+01:00</updated><id>http://localhost:4000/feed.xml</id><title type="html">Fraser Scott</title><subtitle>A blog</subtitle><entry><title type="html">Investigating list indexing with linear probes</title><link href="http://localhost:4000/2026/05/12/linearly-tracing-gemma-3-4b.html" rel="alternate" type="text/html" title="Investigating list indexing with linear probes" /><published>2026-05-12T00:00:00+01:00</published><updated>2026-05-12T00:00:00+01:00</updated><id>http://localhost:4000/2026/05/12/linearly-tracing-gemma-3-4b</id><content type="html" xml:base="http://localhost:4000/2026/05/12/linearly-tracing-gemma-3-4b.html"><![CDATA[<p><a href="https://colab.research.google.com/github/yonadaa/list-indexing-linear-probes/blob/main/list-indexing-linear-probes.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" /></a></p>
+
+<p>How do LLMs perform list indexing? Namely, how do they complete prompts like:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;&gt;&gt;</span> <span class="n">nums</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">nums</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+</code></pre></div></div>
+
+<p>Intuitively, models must compute the correct answer (7) somewhere, perhaps in a particular layer and token position. We can try and identify that point with <strong>linear probes</strong>.</p>
+
+<p>Linear probes essentially tell us whether some piece of information is present in a models residual stream. If a linear probe is robustly able to recover some piece of information, it is as though that information is a “variable” in the model’s working memory, ready to be used at later steps.</p>
+
+<p>To start investigating this, I generated a dataset of prompts with randomized lists of length 6 and randomized indices, formatted as Python code:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Dataset</span> <span class="n">size</span><span class="p">:</span> <span class="mi">600</span>
+<span class="n">Samples</span> <span class="n">per</span> <span class="n">position</span><span class="p">:</span> <span class="mi">100</span>
+
+<span class="n">Example</span> <span class="n">prompts</span><span class="p">:</span>
+  <span class="sh">'</span><span class="s">&gt;&gt;&gt; nums = [4,3,3,7,0,0]</span><span class="se">\n</span><span class="s">&gt;&gt;&gt; nums[2]</span><span class="se">\n</span><span class="sh">'</span>
+    <span class="err">→</span> <span class="n">position</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">3</span>
+  <span class="sh">'</span><span class="s">&gt;&gt;&gt; nums = [4,0,2,3,2,3]</span><span class="se">\n</span><span class="s">&gt;&gt;&gt; nums[1]</span><span class="se">\n</span><span class="sh">'</span>
+    <span class="err">→</span> <span class="n">position</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">0</span>
+  <span class="sh">'</span><span class="s">&gt;&gt;&gt; nums = [4,9,5,1,6,5]</span><span class="se">\n</span><span class="s">&gt;&gt;&gt; nums[5]</span><span class="se">\n</span><span class="sh">'</span>
+    <span class="err">→</span> <span class="n">position</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mi">5</span>
+</code></pre></div></div>
+
+<p>The model <code class="language-plaintext highlighter-rouge">gemma-3-4b-pt</code> is able to reliably perform this task, predicting the correct value with 97% accuracy:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Overall</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">97.0</span><span class="o">%</span> <span class="p">(</span><span class="mi">194</span><span class="o">/</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="n">Accuracy</span> <span class="n">by</span> <span class="n">queried</span> <span class="n">position</span><span class="p">:</span>
+  <span class="n">Position</span> <span class="mi">0</span><span class="p">:</span> <span class="mf">100.0</span><span class="o">%</span> <span class="p">(</span><span class="mi">31</span><span class="o">/</span><span class="mi">31</span><span class="p">)</span>
+  <span class="n">Position</span> <span class="mi">1</span><span class="p">:</span> <span class="mf">100.0</span><span class="o">%</span> <span class="p">(</span><span class="mi">39</span><span class="o">/</span><span class="mi">39</span><span class="p">)</span>
+  <span class="n">Position</span> <span class="mi">2</span><span class="p">:</span> <span class="mf">100.0</span><span class="o">%</span> <span class="p">(</span><span class="mi">32</span><span class="o">/</span><span class="mi">32</span><span class="p">)</span>
+  <span class="n">Position</span> <span class="mi">3</span><span class="p">:</span> <span class="mf">93.8</span><span class="o">%</span> <span class="p">(</span><span class="mi">30</span><span class="o">/</span><span class="mi">32</span><span class="p">)</span>
+  <span class="n">Position</span> <span class="mi">4</span><span class="p">:</span> <span class="mf">97.5</span><span class="o">%</span> <span class="p">(</span><span class="mi">39</span><span class="o">/</span><span class="mi">40</span><span class="p">)</span>
+  <span class="n">Position</span> <span class="mi">5</span><span class="p">:</span> <span class="mf">88.5</span><span class="o">%</span> <span class="p">(</span><span class="mi">23</span><span class="o">/</span><span class="mi">26</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This is impressive; there are <code class="language-plaintext highlighter-rouge">10^6</code> possible lists, so the model is probably doing something more sophisticated than memorising every possible answer. Note its accuracy decreases slightly in the later positions, although not by much.</p>
+
+<p>Handily, the Gemma 3 tokenizer individually tokenizes each digit in the prompt, so it will be easy to compare the model’s behaviour on particular indices in the list:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Token</span> <span class="n">breakdown</span><span class="p">:</span>
+  <span class="n">pos</span>  <span class="mi">0</span><span class="p">:</span>      <span class="mi">2</span> <span class="err">→</span> <span class="sh">'</span><span class="s">&lt;bos&gt;</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">1</span><span class="p">:</span>  <span class="mi">22539</span> <span class="err">→</span> <span class="sh">'</span><span class="s">&gt;&gt;&gt;</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">2</span><span class="p">:</span>  <span class="mi">27536</span> <span class="err">→</span> <span class="sh">'</span><span class="s"> nums</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">3</span><span class="p">:</span>    <span class="mi">578</span> <span class="err">→</span> <span class="sh">'</span><span class="s"> =</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">4</span><span class="p">:</span>    <span class="mi">870</span> <span class="err">→</span> <span class="sh">'</span><span class="s"> [</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">5</span><span class="p">:</span> <span class="mi">236771</span> <span class="err">→</span> <span class="sh">'</span><span class="s">0</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">6</span><span class="p">:</span> <span class="mi">236764</span> <span class="err">→</span> <span class="sh">'</span><span class="s">,</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">7</span><span class="p">:</span> <span class="mi">236800</span> <span class="err">→</span> <span class="sh">'</span><span class="s">3</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">8</span><span class="p">:</span> <span class="mi">236764</span> <span class="err">→</span> <span class="sh">'</span><span class="s">,</span><span class="sh">'</span>
+  <span class="n">pos</span>  <span class="mi">9</span><span class="p">:</span> <span class="mi">236800</span> <span class="err">→</span> <span class="sh">'</span><span class="s">3</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">10</span><span class="p">:</span> <span class="mi">236764</span> <span class="err">→</span> <span class="sh">'</span><span class="s">,</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">11</span><span class="p">:</span> <span class="mi">236770</span> <span class="err">→</span> <span class="sh">'</span><span class="s">1</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">12</span><span class="p">:</span> <span class="mi">236764</span> <span class="err">→</span> <span class="sh">'</span><span class="s">,</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">13</span><span class="p">:</span> <span class="mi">236812</span> <span class="err">→</span> <span class="sh">'</span><span class="s">4</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">14</span><span class="p">:</span> <span class="mi">236764</span> <span class="err">→</span> <span class="sh">'</span><span class="s">,</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">15</span><span class="p">:</span> <span class="mi">236825</span> <span class="err">→</span> <span class="sh">'</span><span class="s">6</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">16</span><span class="p">:</span> <span class="mi">236842</span> <span class="err">→</span> <span class="sh">'</span><span class="s">]</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">17</span><span class="p">:</span>    <span class="mi">107</span> <span class="err">→</span> <span class="sh">'</span><span class="se">\n</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">18</span><span class="p">:</span>  <span class="mi">22539</span> <span class="err">→</span> <span class="sh">'</span><span class="s">&gt;&gt;&gt;</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">19</span><span class="p">:</span>  <span class="mi">27536</span> <span class="err">→</span> <span class="sh">'</span><span class="s"> nums</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">20</span><span class="p">:</span> <span class="mi">236840</span> <span class="err">→</span> <span class="sh">'</span><span class="s">[</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">21</span><span class="p">:</span> <span class="mi">236778</span> <span class="err">→</span> <span class="sh">'</span><span class="s">2</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">22</span><span class="p">:</span> <span class="mi">236842</span> <span class="err">→</span> <span class="sh">'</span><span class="s">]</span><span class="sh">'</span>
+  <span class="n">pos</span> <span class="mi">23</span><span class="p">:</span>    <span class="mi">107</span> <span class="err">→</span> <span class="sh">'</span><span class="se">\n</span><span class="sh">'</span>
+
+<span class="n">Total</span> <span class="n">tokens</span><span class="p">:</span> <span class="mi">24</span>
+</code></pre></div></div>
+
+<p>Now, we can start probing. We will focus on probing the last token position (<code class="language-plaintext highlighter-rouge">'\n'</code>), because it has the full context through attention. In theory, the residual stream at that position may encode all of the information that the model has derived from the prompt - the elements in the list, and eventually the value of the target index (ie. <code class="language-plaintext highlighter-rouge">nums[i]</code>). It is very possible that this information can be recovered from other token positions however, at even earlier layers.</p>
+
+<p>To motivate the use of linear probes, it is worth pondering how the model might encode all of this information into a single residual stream. One obvious hypothesis would be that is has index-specific digit directions, ie. there is a direction for “index 0 is 4,” a separate direction for “index 1 is a 4”, and so on. With only 10 digits × 6 positions = 60 directions, this seems feasible. In any case, as long the model is using <a href="https://arxiv.org/abs/2311.03658">linear representations</a>, then linear probes will find the best projection to extract it.</p>
+
+<p>We will first try to answer a basic question - can each element of the list be recovered from the residual stream of the final token position? If every element is present in the residual stream at all times, it becomes more nuanced to identify when the model has isolated the target element. Our ultimate goal will be to detect if the correct answer is <em>more</em> recoverable than the other elements.</p>
+
+<p>To establish this baseline, we first train “per-index” probes for each layer. Specifically, given only the model’s activations for a single layer, the probe outputs a label from 0-9 predicting the value of the list at its index:</p>
+
+<p><img src="/assets/linear_probe_diagram.svg" alt="linear_probe_diagram" /></p>
+
+<p>Despite only having access to the models activations, the probes can learn how the model encodes information and reliably extract the value of each index. If the model does not linearly represent an element in the residual stream, then the corresponding probe will not have enough signal to achieve high accuracy. In that case the probe has a 1 in 10 chance of guessing the correct answer.</p>
+
+<p>With lists of length 6 and 35 layers, there are 210 per-index probes; luckily they are cheap to train. We use our dataset to sample residual stream activations for each layer, then fit linear probes to the data with a sklearn <code class="language-plaintext highlighter-rouge">LogisticRegression</code>.</p>
+
+<p>We can then plot the per-layer accuracy for each index:</p>
+
+<p><img src="/assets/graph-positions.png" alt="graph-positions" /></p>
+
+<p>The family of probes for a given index is represented by a coloured line. Each datapoint indicates how successful a probe is at recovering its list element at that layer. For example, the probe for index 1, layer 16 has an accuracy of 60%; the value of the 2nd element in the list can reliably be recovered from the residual stream at layer 16.</p>
+
+<p>There are a few trends. None of the elements fall below the chance line of 10%; they are all always present in the residual stream. The model does indeed move information about each element to the final token position.</p>
+
+<p>The value of 1st element in the list is always prominent in the residual stream, never dipping below 70% accuracy. This element might be treated specially by the model; <code class="language-plaintext highlighter-rouge">arr[0]</code> is a common pattern. The 2nd and 6th values are initially amplified, but gradually decrease between layers 13 and 20. The remaining elements hover around the 35-60% range.</p>
+
+<p>With this established, we can now try and identify when the model isolates the <em>target</em> digit. That is, out of all the elements present in the residual stream, which is the “correct” one to output based on <code class="language-plaintext highlighter-rouge">nums[i]</code>? To do this, we train a “target probe” for each layer that, given an activation, learns to output the value of the list at the target index:</p>
+
+<p><img src="/assets/target_probe_diagram.svg" alt="target_probe_diagram" /></p>
+
+<p>With these probes trained, we can overlay their accuracy onto the per-index diagram:</p>
+
+<p><img src="/assets/graph-target.png" alt="graph-target" /></p>
+
+<p>We see a clear trend - an almost inverse relationship between the linear recoverability of the target digit and the other elements. At layer 13, the accuracy of the target digit shoots from 30% to 85%, and asymptotes to nearly 100% in the subsequent layers; meanwhile the accuracy of the other digits gradually levels off.</p>
+
+<p>To answer our initial question, it would appear that the model identifies the correct answer on or before layer 13. The correct answer is amplified heavily, and the model starts “ignoring” the other elements, which are slowly overwritten in the residual stream.</p>
+
+<p>Of course, while this graph offers a intriguing picture, there are a few caveats to this approach. High probe accuracy also does not imply that the model uses that information causally - it may be a byproduct of the computation rather than an input to it. Verifying this would require causal interventions like activation patching. In addition, we only probed the final token position; the model may perform key computations at other positions earlier in the forward pass.</p>
+
+<p>More investigation is needed…</p>]]></content><author><name></name></author><summary type="html"><![CDATA[How do LLMs perform list indexing? Namely, how do they complete prompts like:]]></summary></entry><entry><title type="html">Injecting country features in Gemma2-2b</title><link href="http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b.html" rel="alternate" type="text/html" title="Injecting country features in Gemma2-2b" /><published>2026-04-24T00:00:00+01:00</published><updated>2026-04-24T00:00:00+01:00</updated><id>http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b</id><content type="html" xml:base="http://localhost:4000/2026/04/24/injecting-country-features-in-gemma2-2b.html"><![CDATA[<p><a href="https://colab.research.google.com/github/yonadaa/currency-circuit-tracing/blob/main/currency_circuit_tracing.ipynb"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab" /></a></p>
 
 <p>Circuit tracing lets us identify interpretable features in language models. But if we find a feature relating to some concept, does it activate on all prompts involving that concept? And do prompts involving different concepts use analogous features in the same role?</p>
 
