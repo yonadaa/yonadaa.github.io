@@ -4,6 +4,7 @@ title: "Investigating list indexing with linear probes"
 date: 2026-05-15
 description: "How do LLMs perform list indexing? Namely, how do they complete prompts like:"
 excerpt: "How do LLMs perform list indexing? Namely, how do they complete prompts like:"
+image: /assets/graph-target.png
 ---
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/yonadaa/list-indexing-linear-probes/blob/main/list-indexing-linear-probes.ipynb)
