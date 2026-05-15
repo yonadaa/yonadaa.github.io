@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Investigating list indexing with linear probes"
-date: 2026-05-12
+date: 2026-05-15
 description: "How do LLMs perform list indexing? Namely, how do they complete prompts like:"
 excerpt: "How do LLMs perform list indexing? Namely, how do they complete prompts like:"
 ---
